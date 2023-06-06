@@ -101,7 +101,7 @@ server <- function(input, output, session) {
       group_by(DIKUM) %>%
       summarize(count = n()) %>%
       e_charts(DIKUM) %>%
-      e_bar(count, name = "KORPS") %>%
+      e_bar(count, name = "DIKUM") %>%
       e_color(color = "fuchsia", background = "white")%>% 
       e_flip_coords() %>%
       e_tooltip(trigger = "axis", formatter = "{a} <br/>{b} : {c}") 
