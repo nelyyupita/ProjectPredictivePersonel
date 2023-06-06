@@ -231,7 +231,7 @@ server <- function(input, output, session) {
       group_by(HUKUMAN) %>%
       summarize(count = n()) %>%
       e_charts(HUKUMAN) %>%
-      e_bar(count) %>%
+      e_bar(count, name = "HUKUMAN") %>%
       e_tooltip(trigger = "axis", formatter = "{a} <br/>{b} : {c}") 
   })
   
@@ -250,7 +250,7 @@ server <- function(input, output, session) {
     data_personalInformation<- filterData()%>%
       select(NAMA)
     
-    valueBox(value= data_personalInformation$NAMA , subtitle = "nama", icon = icon("user-times"), color = "red")
+    valueBox(value= data_personalInformation$NAMA , subtitle = "NAMA", icon = icon("user-times"), color = "red")
   })
   
   ########################################################################
@@ -267,14 +267,14 @@ server <- function(input, output, session) {
   
   
   output$tgl <- renderText({
-    paste0("1. Tanggal Lahir: ", filterData()$TGL_LAHIR)
+    paste0("1. Tanggal Lahir : ", filterData()$TGL_LAHIR)
   })
   
   output$usia <- renderText({
-    paste0("2. Usia: ", filterData()$USIA_RIIL)
+    paste0("2. Usia : ", filterData()$USIA_RIIL)
   })
   output$tmt <- renderText({
-    paste0("3. TMT TNI: ", filterData()$TMT_TNI)
+    paste0("3. TMT TNI : ", filterData()$TMT_TNI)
   })
   
   
@@ -284,7 +284,7 @@ server <- function(input, output, session) {
   })
   
   output$urikes <- renderText({
-    paste0("2. Urikes: ", filterData()$URIKES)
+    paste0("2. Urikes : ", filterData()$URIKES)
   })
   
   output$samapta <- renderText({
@@ -297,20 +297,20 @@ server <- function(input, output, session) {
   
   
   output$satis <- renderText({
-    paste0("Environment Satisfaction: ", filterData()$EnvironmentSatisfaction)
+    paste0("Environment Satisfaction : ", filterData()$EnvironmentSatisfaction)
   })
   
   
   output$jobsatis <- renderText({
-    paste0("Job Satisfaction: ", filterData()$JobSatisfaction)
+    paste0("Job Satisfaction : ", filterData()$JobSatisfaction)
   })
   
   output$relation <- renderText({
-    paste0("Relationship Satisfaction: ", filterData()$RelationshipSatisfaction)
+    paste0("Relationship Satisfaction : ", filterData()$RelationshipSatisfaction)
   })
   
   output$work <- renderText({
-    paste0("Work Life Balance: ", filterData()$WorkLifeBalance)
+    paste0("Work Life Balance : ", filterData()$WorkLifeBalance)
   })
   
   ###########################################################################################
@@ -353,12 +353,12 @@ server <- function(input, output, session) {
   
   output$predJab <- renderText({
     req(filterData1())
-    paste0("Jabatan :", filterData1()$pkt_next)
+    paste0("Jabatan : ", filterData1()$pkt_next)
   })
   
   output$predKenkat <- renderText({
     req(filterData1())
-    paste0("Kenkat :", filterData1()$bisa_naik_pangkat)
+    paste0("Kenkat : ", filterData1()$bisa_naik_pangkat)
   })
   
   output$predSekolah <- renderText({
@@ -405,7 +405,7 @@ server <- function(input, output, session) {
     
     
     sekolah
-    paste0("Sekolah :", sekolah)
+    paste0("Sekolah : ", sekolah)
   })
   
 }
