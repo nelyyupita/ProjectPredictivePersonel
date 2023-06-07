@@ -143,7 +143,7 @@ ui <- dashboardPage(
             textOutput(outputId = "bing")),
         
         
-      
+        
       ),
       tabItem(
         
@@ -173,10 +173,10 @@ ui <- dashboardPage(
               box(width = 4, h3("Prediksi Sekolah"),
                   textOutput(outputId = "predSekolah"))
               
-              )
+          )
         )
         
-    
+        
       )
     )
   )
@@ -193,7 +193,7 @@ server <- function(input, output, session) {
       e_bar(count, name = "STRATA") %>%
       e_color(color = "green", background = "white")%>% 
       e_tooltip(trigger = "axis", formatter = "{Perwira} <br/>{Bintara} : {Tamtama}") 
-      #e_tooltip(trigger = "item", formatter = "{a} <br/>{b} : {c} ({d}%)")
+    #e_tooltip(trigger = "item", formatter = "{a} <br/>{b} : {c} ({d}%)")
     
     
   })
@@ -221,7 +221,7 @@ server <- function(input, output, session) {
       e_legend("terisi")
   })
   
-#DIKUM  
+  #DIKUM  
   output$dikum <- renderEcharts4r({
     data %>%
       filter(!is.na(DIKUM)) %>%
@@ -262,14 +262,14 @@ server <- function(input, output, session) {
       group_by(HUKUMAN) %>%
       summarize(count = n()) %>%
       e_charts(HUKUMAN) %>%
-      e_bar(count) %>%
+      e_bar(count, name = "HUKUMAN") %>%
       e_tooltip(trigger = "axis", formatter = "{a} <br/>{b} : {c}") 
   })
   
   
   output$coba <- renderUI({
     req(input$Btn)
-    paste0("ID Employee: ", input$profile)
+    paste0("ID Employee : ", input$profile)
   })
   
   filterData <- eventReactive(input$Btn,{
@@ -281,7 +281,7 @@ server <- function(input, output, session) {
     data_personalInformation<- filterData()%>%
       select(NAMA)
     
-    valueBox(value= data_personalInformation$NAMA , subtitle = "nama", icon = icon("user-times"), color = "red")
+    valueBox(value= data_personalInformation$NAMA , subtitle = "NAMA", icon = icon("user-times"), color = "red")
   })
   
   ########################################################################
@@ -298,14 +298,14 @@ server <- function(input, output, session) {
   
   
   output$tgl <- renderText({
-    paste0("1. Tanggal Lahir: ", filterData()$TGL_LAHIR)
+    paste0("1. Tanggal Lahir : ", filterData()$TGL_LAHIR)
   })
   
   output$usia <- renderText({
-    paste0("2. Usia: ", filterData()$USIA_RIIL)
+    paste0("2. Usia : ", filterData()$USIA_RIIL)
   })
   output$tmt <- renderText({
-    paste0("3. TMT TNI: ", filterData()$TMT_TNI)
+    paste0("3. TMT TNI : ", filterData()$TMT_TNI)
   })
   
   
@@ -315,7 +315,7 @@ server <- function(input, output, session) {
   })
   
   output$urikes <- renderText({
-    paste0("2. Urikes: ", filterData()$URIKES)
+    paste0("2. Urikes : ", filterData()$URIKES)
   })
   
   output$samapta <- renderText({
@@ -326,23 +326,6 @@ server <- function(input, output, session) {
     paste0("4. B. Inggris : ", filterData()$BHS.INGGRIS)
   })
   
-  
-  output$satis <- renderText({
-    paste0("Environment Satisfaction: ", filterData()$EnvironmentSatisfaction)
-  })
-  
-  
-  output$jobsatis <- renderText({
-    paste0("Job Satisfaction: ", filterData()$JobSatisfaction)
-  })
-  
-  output$relation <- renderText({
-    paste0("Relationship Satisfaction: ", filterData()$RelationshipSatisfaction)
-  })
-  
-  output$work <- renderText({
-    paste0("Work Life Balance: ", filterData()$WorkLifeBalance)
-  })
   
   ###########################################################################################
   filterData1 <- eventReactive(input$btn2,{
@@ -385,12 +368,12 @@ server <- function(input, output, session) {
   
   output$predJab <- renderText({
     req(filterData1())
-    paste0("Jabatan :" , filterData1()$JABATAN )
+    paste0("Jabatan : " , filterData1()$JABATAN )
   })
   
   output$predKenkat <- renderText({
     req(filterData1())
-    paste0("Kenkat :", filterData1()$pkt_next, "(", filterData1()$bisa_naik_pangkat,")" )
+    paste0("Kenkat : ", filterData1()$pkt_next, "(", filterData1()$bisa_naik_pangkat,")" )
     
   })
   
@@ -440,7 +423,7 @@ server <- function(input, output, session) {
     
     
     sekolah
-    paste0("Sekolah :", sekolah)
+    paste0("Sekolah : ", sekolah)
   })
   
 }
