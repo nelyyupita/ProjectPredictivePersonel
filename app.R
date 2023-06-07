@@ -7,11 +7,32 @@ library(ggplot2)
 library(DT)
 library(echarts4r) 
 
-data <- read_csv("data_pers_kri_rev1.csv")
-data1 <- read_csv("data_pers_kri_rev1.csv")
+footer <- fluidRow(
+  div(
+    style = "
+      width: 100vw;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      background-color: #222;
+      margin-top: 20px;
+      z-index: 10000;
+    ",
+    p(
+      style="
+        text-align: center; 
+        color: white; margin: 0;",
+      "Copyright TNI AL 2023 Version 0.31")
+  )
+)
+
+data <- read_csv2("data_pers_kri_rev1.csv")
+data1 <- read_csv2("data_pers_kri_rev1.csv")
 regulation <- read_csv2(file = "REGULATION.csv")
 
-
+regulation %>% 
+  mutate(DIK_BANG = trimws(DIK_BANG)) -> regulation
 
 jabatan_pred_function <- function(data, nrp) {
   # regulation
@@ -31,25 +52,32 @@ jabatan_pred_function <- function(data, nrp) {
       pkt_now == trimws(one_person_data$PKT_RIIL)
     ) -> filtered_jabatan
   
-  if (!any(is.na(filtered_jabatan$DIK_BANG))) {
-    filtered_jabatan %>% 
-      filter(str_detect(DIK_BANG, trimws(one_person_data$DIKBANG))) %>% 
-      select(pkt_now, pkt_next,DIK_BANG, MDP_syarat) -> filtered_jabatan
-    one_person_data %>% 
-      bind_cols(filtered_jabatan) %>% 
-      mutate(bisa_naik_pangkat = ifelse(MDP >= MDP_syarat, "Ya", "Tidak")) -> result
+  if (!is.na(one_person_data$DIKBANG)) {
+    if (!any(is.na(filtered_jabatan$DIK_BANG))) {
+      filtered_jabatan %>% 
+        filter(DIK_BANG == trimws(one_person_data$DIKBANG)) %>% 
+        select(pkt_now, pkt_next,DIK_BANG, MDP_syarat, JABATAN) -> filtered_jabatan
+      one_person_data %>% 
+        bind_cols(filtered_jabatan) %>% 
+        mutate(bisa_naik_pangkat = ifelse(MDP >= MDP_syarat, "Ya", "Tidak")) -> result
+    } else {
+      
+      filtered_jabatan %>% 
+        select(pkt_now, pkt_next,DIK_BANG, MDDP_syarat, JABATAN) -> filtered_jabatan
+      
+      one_person_data %>% 
+        bind_cols(filtered_jabatan) %>% 
+        mutate(bisa_naik_pangkat = ifelse(MDDP >= MDDP_syarat, "Ya", "Tidak")) -> result
+    }
   } else {
-    
     filtered_jabatan %>% 
-      select(pkt_now, pkt_next,DIK_BANG, MDDP_syarat) -> filtered_jabatan
-    
+      select(pkt_now, pkt_next,DIK_BANG, MDP_syarat, JABATAN) -> filtered_jabatan
     one_person_data %>% 
-      bind_cols(filtered_jabatan) %>% 
-      mutate(bisa_naik_pangkat = ifelse(MDDP >= MDDP_syarat, "Ya", "Tidak")) -> result
-    
+      bind_cols(filtered_jabatan) -> result
   }
   return(result)
 }
+
 
 ui <- dashboardPage(
   dashboardHeader(
@@ -64,6 +92,7 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
+    footer,
     tabItems(
       tabItem(tabName = "dashboard",
               h1("Main Dashboard - Predictive Personel"),
@@ -118,9 +147,9 @@ ui <- dashboardPage(
       ),
       tabItem(
         
-        tabName = "prediksi",
-        h1("Prediksi"),
-        fluidRow(
+        tabName =  "prediksi",
+        h1("Prediksi", align = "center"),
+        fluidPage(
           box(width = 6,
               selectInput(inputId = "predict", label = "Masukan Nrp", choices = data1$NRP),
               box(
@@ -132,20 +161,22 @@ ui <- dashboardPage(
                 textOutput(outputId = "prediksi_usia")
                 
               ),
-              actionButton(inputId = "btn2", label = "Prediksi", icon = icon("magnifying-glass")))
-        ),
+              
+              actionButton(inputId = "btn2", label = "Prediksi", icon = icon("magnifying-glass"))),
+          box(width = 6, height = 260, 
+              box(width = 4, h3("Prediksi Jabatan"),
+                  textOutput(outputId = "predJab")),
+              
+              box(width = 4, h3("Prediksi Kenkat"),
+                  textOutput(outputId = "predKenkat")),
+              
+              box(width = 4, h3("Prediksi Sekolah"),
+                  textOutput(outputId = "predSekolah"))
+              
+              )
+        )
         
-        
-        box(width = 3, h2("Prediksi Jabatan"),
-            textOutput(outputId = "predJab")),
-        
-        box(width = 3, h2("Prediksi Kenkat"),
-            textOutput(outputId = "predKenkat")),
-        
-        box(width = 3, h1("Prediksi Sekolah"),
-            textOutput(outputId = "predSekolah"))
-      
-        
+    
       )
     )
   )
@@ -315,12 +346,13 @@ server <- function(input, output, session) {
   
   ###########################################################################################
   filterData1 <- eventReactive(input$btn2,{
-    data1 %>% jabatan_pred_function(nrp = input$predict)
+    data1 %>% jabatan_pred_function(nrp = input$predict) %>% distinct_all()
   })
   
   
   output$nama <- renderText({
     req(filterData1())
+    print(filterData1())
     paste0("Nama : ", filterData1()$NAMA)
   })
   
@@ -353,17 +385,18 @@ server <- function(input, output, session) {
   
   output$predJab <- renderText({
     req(filterData1())
-    paste0("Jabatan :", filterData1()$pkt_next)
+    paste0("Jabatan :" , filterData1()$JABATAN )
   })
   
   output$predKenkat <- renderText({
     req(filterData1())
-    paste0("Kenkat :", filterData1()$bisa_naik_pangkat)
+    paste0("Kenkat :", filterData1()$pkt_next, "(", filterData1()$bisa_naik_pangkat,")" )
+    
   })
   
   output$predSekolah <- renderText({
     req(filterData1())
-    pkt_now <- filterData1()$pkt_now
+    pkt_now <- trimws(filterData1()$pkt_now)
     MDDP <- filterData1()$MDDP
     MDP <- filterData1()$MDP
     USIA_RIIL <- filterData1()$USIA_RIIL
@@ -374,6 +407,8 @@ server <- function(input, output, session) {
     } else if (pkt_now == "PELTU" & MDDP >= 0 & USIA_RIIL >= 45) {
       sekolah <- "DIKTUPAKAT"
     } else if (pkt_now == "KOPDA" & MDDP >= 2 & USIA_RIIL >= 31) {
+      sekolah <- "DIKTUKBA"
+    } else if (pkt_now == "KOPTU" & MDDP >= 2 & USIA_RIIL >= 31) {
       sekolah <- "DIKTUKBA"
     } else if(pkt_now == "KOPKA" & USIA_RIIL >= 41) {
       sekolah <- "DIKTUKBAKAT"
